@@ -7,19 +7,27 @@ const performLogin = (e) => {
     const pass = e.target.password.value
     signInWithEmailAndPassword(auth, email, pass).then((credentials)=>{
         console.log("Success!")
+        setUser(credentials.user)
     }).catch((error)=>{
-        console.log(error.message)
-        if(error.code == "auth/invalid-email") {
-            createUserWithEmailAndPassword(auth, email, pass).then(()=>{
+        if(error.code == "auth/invalid-credential") {
+            console.log("User with that email was not found, creating new account with these credentials.")
+            createUserWithEmailAndPassword(auth, email, pass).then((credentials)=>{
                 console.log("Successfully created new account")
+                setUser(credentials.user)
             }).catch((error) => {
                 console.error(error.code)
             })
         }
-        else if (error.code == "auth/invalid-credential") {
-            console.log("Incorrect Password")
+        else if (error.code == "auth/invalid-email") {
+            console.log("Invalid Email")
         }
     })
+}
+
+var user;
+const setUser = (u) => {
+    user = u;
+    console.log(user)
 }
 const Login = () => {
     return (<>

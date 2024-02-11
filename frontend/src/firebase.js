@@ -3,7 +3,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -15,10 +15,9 @@ const firebaseConfig = {
   projectId: "officehoursproject-e6c61",
   storageBucket: "officehoursproject-e6c61.appspot.com",
   messagingSenderId: "499685175743",
-  appId: "1:499685175743:web:ded7be3089a7b0bdc7b10a",
-  measurementId: "G-SH0M4P2BFG"
+  appId: "1:499685175743:web:bc9735e7b4cfffd0c7b10a",
+  measurementId: "G-2ET81PM6DK"
 };
-
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 console.log("App initialized")
