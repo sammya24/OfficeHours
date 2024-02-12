@@ -1,7 +1,8 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
+import { auth, db } from "../firebase";
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { doc, setDoc } from "firebase/firestore";
 
 const Login = () => {
     const [user, setUser] = useState(null);
@@ -22,10 +23,22 @@ const Login = () => {
                 if (error.code === "auth/invalid-credential") {
                     console.log("User with that email was not found, creating new account with these credentials.");
                     createUserWithEmailAndPassword(auth, email, pass)
-                        .then((credentials) => {
+                        .then(async (credentials) => {
                             console.log("Successfully created new account");
                             setUser(credentials.user);
                             navigate('/dashboard'); // Navigate to the dashboard route
+                            console.log("Attempting to create document...");
+                            // Add user data to Firestore upon successful account creation
+                            await setDoc(doc(db, "users", credentials.user.uid), {
+                                email: credentials.user.email,
+                                // Add more user data if needed
+                            })
+                            .then(() => {
+                                console.log("Firestore document created successfully");
+                            })
+                            .catch((error) => {
+                                console.error("Error creating Firestore document:", error);
+                            });
                         })
                         .catch((error) => {
                             console.error(error.code);
