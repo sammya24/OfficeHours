@@ -25,12 +25,12 @@ const Login = () => {
             alert("Please enter an email!")
             return;
         }
-        if(!e.target.password) {
+        if(!e.target.current_password.value) {
             alert("Please enter a password!")
             return;
         }
         const email = e.target.email.value;
-        const pass = e.target.password.value;
+        const pass = e.target.current_password.value;
 
 
         signInWithEmailAndPassword(auth, email, pass)
