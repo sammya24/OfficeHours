@@ -2,8 +2,8 @@ import { auth, db } from "../firebase";
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc} from 'firebase/firestore'; // Importing doc function
-import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc } from 'firebase/firestore';
 import { Link } from 'react-router-dom';
+import { onAuthStateChanged } from "firebase/auth";
 
 const Dashboard = () => {
     const [userEmail, setUserEmail] = useState(null);
@@ -19,8 +19,9 @@ const Dashboard = () => {
     const [userClasses, setUserClasses] = useState([]);
 
     useEffect(() => {
-        const fetchUserDetails = async () => {
-            if (auth.currentUser) {
+
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
                 const userRef = doc(db, 'users', auth.currentUser.uid);
                 const userSnap = await getDoc(userRef);
                 if (userSnap.exists()) {
@@ -29,12 +30,6 @@ const Dashboard = () => {
                     setUserEmail(auth.currentUser.email);
                     setUserRole(userData.role); // Assuming 'role' is the field name for user roles
                     setUserStatus(userData.status);
-                }
-            }
-        };
-        setIsLoading(false);
-        // Call fetchUserDetails when the component mounts
-                    setUserRole(userData.role);
 
                     // Fetch user's classes when the component mounts
                     const q = query(collection(db, 'classes'), where("instructor", "==", auth.currentUser.uid));
@@ -51,22 +46,24 @@ const Dashboard = () => {
                         classes.push({ id: classDoc.id, ...classDoc.data() });
                     });
                     setUserClasses(classes);
+                } else {
+                    console.log("No such document in Firestore!");
                 }
+                setIsLoading(false); // Auth check completed
+            } else {
+                // No user is signed in.
+                navigate('/login');
             }
-        };
+        });
 
-        fetchUserDetails();
-    }, []);
+        return () => unsubscribe(); // Clean up the subscription
+    }, [navigate]);
 
 
     const handleCreateClassSubmit = async (e) => {
         e.preventDefault();
 
         // Check if the user has the 'instructor' role before proceeding
-    if (userRole !== 'instructor' || userStatus !== 'approved') {
-        alert('Only approved instructors can create classes.');
-        return;
-    }
         if (userRole !== 'instructor') {
             alert('Only instructors can create classes.');
             return;
@@ -130,7 +127,7 @@ const Dashboard = () => {
             alert('Failed to join class. Please try again.');
         }
     };
-    
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -138,15 +135,19 @@ const Dashboard = () => {
     return (
         <>
             <div>
-                <h1>Welcome to the Dashboard, {userEmail || 'Guest'}!</h1>
-                {userRole === 'instructor' && userStatus === 'approved' && (
-            <form onSubmit={handleCreateClassSubmit}>
-                <input type="text" placeholder="Class Name" value={className} onChange={(e) => setClassName(e.target.value)} />
-                <input type="text" placeholder="Class Description" value={classDescription} onChange={(e) => setClassDescription(e.target.value)} />
-                <input type="text" placeholder="Class Code" value={classCode} onChange={(e) => setClassCode(e.target.value)} />
-                <button type="submit">Create Class</button>
-            </form>
-            )}
+  <h1>Welcome to the Dashboard, {userEmail || 'Guest'}!</h1>
+  {userRole === 'instructor' && userStatus === 'approved' ? (
+    <form onSubmit={handleCreateClassSubmit}>
+      <input type="text" placeholder="Class Name" value={className} onChange={(e) => setClassName(e.target.value)} />
+      <input type="text" placeholder="Class Description" value={classDescription} onChange={(e) => setClassDescription(e.target.value)} />
+      <input type="text" placeholder="Class Code" value={classCode} onChange={(e) => setClassCode(e.target.value)} />
+      <button type="submit">Create Class</button>
+    </form>
+  ) : userRole === 'instructor' && userStatus === 'pending' ? (
+    <div>
+      <p>Your instructor account is currently pending approval. You will be notified once your account has been reviewed.</p>
+    </div>
+  ) : null}
                 <form onSubmit={handleJoinClassSubmit}>
                     <input type="text" placeholder="Enter Class Code to Join" value={joinClassCode} onChange={(e) => setJoinClassCode(e.target.value)} />
                     <button type="submit">Join Class</button>
@@ -168,5 +169,6 @@ const Dashboard = () => {
             </div>
         </>
     );
-
+};
+   
 export default Dashboard;

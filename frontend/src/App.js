@@ -7,35 +7,21 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import Home from "./Components/Home"
 import Dashboard from './Components/Dashboard';
-import { onAuthStateChanged } from 'firebase/auth';
-import React, { useEffect, useState } from 'react';
-import { auth } from './firebase'; 
 import ClassDetails from './Components/ClassDetails';
+import React, { useEffect, useState } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase';
 
 
 const App = () => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
 
   useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setCurrentUser(user);
-        setLoading(false); 
-
-      } else {
-        setCurrentUser(null);
-      }
+    const unsubscribe = onAuthStateChanged(auth, user => {
+      setCurrentUser(user);
     });
-    return () => unsubscribe();
+    return () => unsubscribe(); // Clean up subscription
   }, []);
-
-
-  if (loading) {  
-    return <div>Loading...</div>;
-  }
-
   return (
     <Router>
       <Routes>

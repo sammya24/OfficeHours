@@ -1,20 +1,25 @@
-import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { auth } from '../firebase'; 
+import React, { useEffect, useState } from 'react';
 import './Home.css';
 
 const Home = () => {
     const navigate = useNavigate();
+    const [checkingAuth, setCheckingAuth] = useState(true); 
 
     useEffect(() => {
-        // Check if the user is already signed in
         const unsubscribe = auth.onAuthStateChanged(user => {
+            setCheckingAuth(false); 
             if (user) {
                 navigate('/dashboard');
             }
         });
         return unsubscribe;
     }, [navigate]);
+
+    if (checkingAuth) {
+        return <div>Loading...</div>; 
+    }
 
     return (
         <div class="home-container">
