@@ -1,9 +1,21 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { auth } from '../firebase'; 
 import './Home.css';
 
-// bypass this page automatically if signed in already
-
 const Home = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check if the user is already signed in
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            if (user) {
+                navigate('/dashboard');
+            }
+        });
+        return unsubscribe;
+    }, [navigate]);
+
     return (
         <div class="home-container">
             <h1>Welcome to Online Office Hours!</h1>
@@ -27,8 +39,8 @@ const Home = () => {
             </p>
             <h2>Get Started</h2>
             <p class="description">
-                Ready to enhance your learning experience? <a href="/login" class="login-link">Log in</a> now or sign up to get started!
-            {/* add link to signup */}
+                Ready to enhance your learning experience? <a href="/login" class="login-link">Log in</a> now or 
+                <Link to="/signup" className="login-link"> sign up</Link> to get started!
             </p>
 
         </div>
