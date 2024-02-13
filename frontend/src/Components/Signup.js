@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; 
+import { doc, setDoc, getDoc } from "firebase/firestore"; 
 import { auth, db } from "../firebase";
 
 const Signup = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("student"); // Default to "student"
+    const [role, setRole] = useState("student");
     const navigate = useNavigate();
 
     const handleSignup = async (e) => {
@@ -16,23 +16,29 @@ const Signup = () => {
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             console.log("Signup Success:", userCredential.user);
-            await setDoc(doc(db, "users", userCredential.user.uid), {
+            const userDocRef = doc(db, "users", userCredential.user.uid);
+            
+            await setDoc(userDocRef, {
                 email: email,
                 role: role,
-                status: role === "instructor" ? "pending" : "approved", // Set status
+                status: role === "instructor" ? "pending" : "approved",
             });
 
-            // Direct user based on role
-            if (role === "student" || role === "instructor" && userCredential.user.status !== "pending") {
-                navigate('/dashboard'); 
+            // For instructors, check the status
+            if (role === "instructor") {
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists() && docSnap.data().status === "pending") {
+                    alert("Your sign up as an instructor is pending approval. You will be notified once your account has been reviewed.");
+                    navigate('/pending-approval');
+                } else {
+                    navigate('/dashboard');
+                }
             } else {
-                // Need it or not?? Pending approval page
-                alert("Your sign up as an instructor is pending approval. You will be notified once your account has been reviewed.");
-                navigate('/pending-approval');
+                navigate('/dashboard');
             }
         } catch (error) {
             console.error("Signup Error:", error);
-            alert(error.message);
+            alert(error.message); // Show error message to the user
         }
     };
 

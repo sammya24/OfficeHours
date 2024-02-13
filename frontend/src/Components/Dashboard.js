@@ -1,5 +1,6 @@
 import { auth, db } from "../firebase";
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc} from 'firebase/firestore'; // Importing doc function
 
 const Dashboard = () => {
@@ -10,6 +11,9 @@ const Dashboard = () => {
     const [instructorId, setInstructorId] = useState('');
     const [joinClassCode, setJoinClassCode] = useState('');
     const [userRole, setUserRole] = useState(null);
+    const [userStatus, setUserStatus] = useState(null);
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         // Fetch the currently logged-in user's ID and role
@@ -22,10 +26,11 @@ const Dashboard = () => {
                     setInstructorId(auth.currentUser.uid);
                     setUserEmail(auth.currentUser.email);
                     setUserRole(userData.role); // Assuming 'role' is the field name for user roles
+                    setUserStatus(userData.status);
                 }
             }
         };
-    
+        setIsLoading(false);
         // Call fetchUserDetails when the component mounts
         fetchUserDetails();
     }, []);
@@ -34,8 +39,8 @@ const Dashboard = () => {
         e.preventDefault();
 
         // Check if the user has the 'instructor' role before proceeding
-    if (userRole !== 'instructor') {
-        alert('Only instructors can create classes.');
+    if (userRole !== 'instructor' || userStatus !== 'approved') {
+        alert('Only approved instructors can create classes.');
         return;
     }
 
@@ -99,17 +104,22 @@ const Dashboard = () => {
         }
     };
     
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <>
         <div>
             <h1>Welcome to the Dashboard, {userEmail || 'Guest'}!</h1>
+            {userRole === 'instructor' && userStatus === 'approved' && (
             <form onSubmit={handleCreateClassSubmit}>
                 <input type="text" placeholder="Class Name" value={className} onChange={(e) => setClassName(e.target.value)} />
                 <input type="text" placeholder="Class Description" value={classDescription} onChange={(e) => setClassDescription(e.target.value)} />
                 <input type="text" placeholder="Class Code" value={classCode} onChange={(e) => setClassCode(e.target.value)} />
                 <button type="submit">Create Class</button>
             </form>
+            )}
             <form onSubmit={handleJoinClassSubmit}>
                 <input type="text" placeholder="Enter Class Code to Join" value={joinClassCode} onChange={(e) => setJoinClassCode(e.target.value)} />
                 <button type="submit">Join Class</button>
