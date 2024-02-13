@@ -29,8 +29,10 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/pending-approval" element={<PendingApproval />} />
         <Route path="/" element={<Home />} />
+        <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/class/:classId" element={<ClassDetails />} />
+
       </Routes>
     </Router>
   );
