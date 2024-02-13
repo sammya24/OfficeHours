@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { useEffect, useState } from 'react';
-import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc} from 'firebase/firestore'; // Importing doc function
+import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc} from 'firebase/firestore';
 
 const Dashboard = () => {
     const [userEmail, setUserEmail] = useState(null);
@@ -10,9 +10,9 @@ const Dashboard = () => {
     const [instructorId, setInstructorId] = useState('');
     const [joinClassCode, setJoinClassCode] = useState('');
     const [userRole, setUserRole] = useState(null);
+    const [userClasses, setUserClasses] = useState([]); 
 
     useEffect(() => {
-        // Fetch the currently logged-in user's ID and role
         const fetchUserDetails = async () => {
             if (auth.currentUser) {
                 const userRef = doc(db, 'users', auth.currentUser.uid);
@@ -21,14 +21,30 @@ const Dashboard = () => {
                     const userData = userSnap.data();
                     setInstructorId(auth.currentUser.uid);
                     setUserEmail(auth.currentUser.email);
-                    setUserRole(userData.role); // Assuming 'role' is the field name for user roles
+                    setUserRole(userData.role);
+
+                    // Fetch user's classes when the component mounts
+                    const q = query(collection(db, 'classes'), where("instructor", "==", auth.currentUser.uid));
+                    const instructorClasses = await getDocs(q);
+
+                    const q2 = query(collection(db, 'classes'), where("students", "array-contains", auth.currentUser.uid));
+                    const studentClasses = await getDocs(q2);
+
+                    const classes = [];
+                    instructorClasses.forEach((classDoc) => {
+                        classes.push({ id: classDoc.id, ...classDoc.data() });
+                    });
+                    studentClasses.forEach((classDoc) => {
+                        classes.push({ id: classDoc.id, ...classDoc.data() });
+                    });
+                    setUserClasses(classes);
                 }
             }
         };
-    
-        // Call fetchUserDetails when the component mounts
+
         fetchUserDetails();
     }, []);
+
 
     const handleCreateClassSubmit = async (e) => {
         e.preventDefault();
@@ -40,15 +56,14 @@ const Dashboard = () => {
     }
 
         try {
-            // Add logic to create a new class in your database
             const classesCollection = collection(db, 'classes');
             await addDoc(classesCollection, {
                 className: className,
                 classDescription: classDescription,
                 createdBy: userEmail,
-                classCode: classCode, // Use the user-defined class code
-                instructor: instructorId, // Add the user as an instructor
-                students: [], // Initialize an empty array for students
+                classCode: classCode,
+                instructor: instructorId,
+                students: [],
                 TAs: []
             });
 
@@ -115,6 +130,18 @@ const Dashboard = () => {
                 <button type="submit">Join Class</button>
             </form>
         </div>
+         {/* Display user's classes */}
+         <div>
+                <h2>Your Classes</h2>
+                <ul>
+                    {userClasses.map((userClass) => (
+                        <li key={userClass.id}>
+                            <strong>Class Name:</strong> {userClass.className}, 
+                            <strong> Class Description:</strong> {userClass.classDescription}
+                        </li>
+                    ))}
+                </ul>
+            </div>
         </>
     );
 };
