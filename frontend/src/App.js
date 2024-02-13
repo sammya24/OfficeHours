@@ -10,6 +10,7 @@ import Dashboard from './Components/Dashboard';
 import { onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import { auth } from './firebase'; 
+import ClassDetails from './Components/ClassDetails';
 
 
 const App = () => {
@@ -43,6 +44,7 @@ const App = () => {
         <Route path="/pending-approval" element={<PendingApproval />} />
         <Route path="/" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/class/:classId" element={<ClassDetails />} />
       </Routes>
     </Router>
   );
