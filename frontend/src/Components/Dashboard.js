@@ -1,6 +1,6 @@
 import { auth, db } from "../firebase";
 import { useEffect, useState } from 'react';
-import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs } from 'firebase/firestore'; // Importing doc function
+import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc} from 'firebase/firestore'; // Importing doc function
 
 const Dashboard = () => {
     const [userEmail, setUserEmail] = useState(null);
@@ -9,22 +9,35 @@ const Dashboard = () => {
     const [classCode, setClassCode] = useState('');
     const [instructorId, setInstructorId] = useState('');
     const [joinClassCode, setJoinClassCode] = useState('');
+    const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
-        // Fetch the currently logged-in user's ID
-        const fetchUserId = () => {
+        // Fetch the currently logged-in user's ID and role
+        const fetchUserDetails = async () => {
             if (auth.currentUser) {
-                setInstructorId(auth.currentUser.uid);
-                setUserEmail(auth.currentUser.email);
+                const userRef = doc(db, 'users', auth.currentUser.uid);
+                const userSnap = await getDoc(userRef);
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    setInstructorId(auth.currentUser.uid);
+                    setUserEmail(auth.currentUser.email);
+                    setUserRole(userData.role); // Assuming 'role' is the field name for user roles
+                }
             }
         };
-
-        // Call fetchUserId when the component mounts
-        fetchUserId();
+    
+        // Call fetchUserDetails when the component mounts
+        fetchUserDetails();
     }, []);
 
     const handleCreateClassSubmit = async (e) => {
         e.preventDefault();
+
+        // Check if the user has the 'instructor' role before proceeding
+    if (userRole !== 'instructor') {
+        alert('Only instructors can create classes.');
+        return;
+    }
 
         try {
             // Add logic to create a new class in your database
@@ -34,8 +47,9 @@ const Dashboard = () => {
                 classDescription: classDescription,
                 createdBy: userEmail,
                 classCode: classCode, // Use the user-defined class code
-                instructors: [instructorId], // Add the user as an instructor
-                students: [] // Initialize an empty array for students
+                instructor: instructorId, // Add the user as an instructor
+                students: [], // Initialize an empty array for students
+                TAs: []
             });
 
             // Reset input fields after successful submission
