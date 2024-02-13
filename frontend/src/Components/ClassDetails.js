@@ -8,6 +8,7 @@ const ClassDetails = ({ instructorId }) => {
     const [classDetails, setClassDetails] = useState(null);
     const [students, setStudents] = useState([]);
     const [teachingAssistants, setTeachingAssistants] = useState([]);
+    const [instructor, setInstructor] = useState(null);
 
     useEffect(() => {
         const fetchClassDetailsAndStudents = async () => {
@@ -18,7 +19,17 @@ const ClassDetails = ({ instructorId }) => {
                 setClassDetails(classSnapshot.data());
                 setStudents(classSnapshot.data().students);
                 setTeachingAssistants(classSnapshot.data().TAs || []); // Initialize TAs with existing data or empty array
+            
+                // Fetch instructor details
+                const instructorRef = doc(db, 'users', classSnapshot.data().instructor);
+                const instructorSnapshot = await getDoc(instructorRef);
+
+                if (instructorSnapshot.exists()) {
+                    setInstructor(instructorSnapshot.data());
+                }
+            
             }
+
         };
 
         fetchClassDetailsAndStudents();
@@ -60,6 +71,8 @@ const ClassDetails = ({ instructorId }) => {
                 <>
                     <h1>{classDetails.className}</h1>
                     <p>{classDetails.classDescription}</p>
+                    <h3>Professor</h3>
+                    {instructor && <p>{instructor.email}</p>}
 
                     <h2>Students</h2>
                     <ul>
