@@ -28,23 +28,24 @@ const Dashboard = () => {
                     const userData = userSnap.data();
                     setInstructorId(auth.currentUser.uid);
                     setUserEmail(auth.currentUser.email);
-                    setUserRole(userData.role); // Assuming 'role' is the field name for user roles
+                    setUserRole(userData.role);
                     setUserStatus(userData.status);
 
-                    // Fetch user's classes when the component mounts
-                    const q = query(collection(db, 'classes'), where("instructor", "==", auth.currentUser.uid));
-                    const instructorClasses = await getDocs(q);
+                    // Fetch user's classes...
+                    const instructorClassesQuery = query(collection(db, 'classes'), where("instructor", "==", auth.currentUser.uid));
+                    const instructorClassesSnap = await getDocs(instructorClassesQuery);
+                    const instructorClasses = instructorClassesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                    const q2 = query(collection(db, 'classes'), where("students", "array-contains", auth.currentUser.uid));
-                    const studentClasses = await getDocs(q2);
+                    const studentClassesQuery = query(collection(db, 'classes'), where("students", "array-contains", auth.currentUser.uid));
+                    const studentClassesSnap = await getDocs(studentClassesQuery);
+                    const studentClasses = studentClassesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-                    const classes = [];
-                    instructorClasses.forEach((classDoc) => {
-                        classes.push({ id: classDoc.id, ...classDoc.data() });
-                    });
-                    studentClasses.forEach((classDoc) => {
-                        classes.push({ id: classDoc.id, ...classDoc.data() });
-                    });
+                    const taClassesQuery = query(collection(db, 'classes'), where("TAs", "array-contains", auth.currentUser.uid));
+                    const taClassesSnap = await getDocs(taClassesQuery);
+                    const taClasses = taClassesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                    // Combine all classes...
+                    const classes = [...instructorClasses, ...studentClasses, ...taClasses];
                     setUserClasses(classes);
                 } else {
                     console.log("No such document in Firestore!");
