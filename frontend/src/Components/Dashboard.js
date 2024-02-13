@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { collection, addDoc, doc, updateDoc, arrayUnion, query, where, getDocs, getDoc} from 'firebase/firestore'; // Importing doc function
 import { Link } from 'react-router-dom';
 import { onAuthStateChanged } from "firebase/auth";
+import LogoutButton from "./LogoutButton";
 
 const Dashboard = () => {
     const [userEmail, setUserEmail] = useState(null);
@@ -168,6 +169,7 @@ const Dashboard = () => {
                     ))}
                 </ul>
             </div>
+            <LogoutButton />
         </>
     );
 };

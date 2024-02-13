@@ -42,27 +42,11 @@ const Login = () => {
             .catch((error) => {
                 if (error.code === "auth/invalid-credential") {
                     console.log("User with that email was not found, creating new account with these credentials.");
-                    createUserWithEmailAndPassword(auth, email, pass)
-                        .then(async (credentials) => {
-                            console.log("Successfully created new account");
-                            setUser(credentials.user);
-                            navigate('/dashboard'); // Navigate to the dashboard route
-                            console.log("Attempting to create document...");
-                            // Add user data to Firestore upon successful account creation
-                            await setDoc(doc(db, "users", credentials.user.uid), {
-                                email: credentials.user.email,
-                                // Add more user data if needed
-                            })
-                            .then(() => {
-                                console.log("Firestore document created successfully");
-                            })
-                            .catch((error) => {
-                                console.error("Error creating Firestore document:", error);
-                            });
-                        })
-                        .catch((error) => {
-                            console.error(error.code);
-                        });
+                    const rerouteToNewAccount = window.confirm("You don't seem to have an account. Would you like to Sign Up?")
+                    if(rerouteToNewAccount === true) {
+                        navigate("/signup")
+                    }
+                    
                 } else if (error.code === "auth/invalid-email") {
                     console.log("Invalid Email");
                 }
