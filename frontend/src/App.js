@@ -1,27 +1,28 @@
-import logo from './logo.svg';
 import './App.css';
 import Login from "./Components/Login"
 import Signup from './Components/Signup';
 import PendingApproval from './Components/PendingApproval'; 
-import { BrowserRouter as Router } from 'react-router-dom';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from "./Components/Home"
 import Dashboard from './Components/Dashboard';
+import UserDetails from './Components/UserDetails';
 import ClassDetails from './Components/ClassDetails';
-import React, { useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase';
+import React from 'react';
+import Classroom from "./Components/Classroom"
+import CreateClassForm from "./Components/CreateClassForm";
+import Whiteboard from './Components/Whiteboard';
+import ResetPassword from "./Components/ResetPassword";
+import ForgotPassword from "./Components/ForgotPassword";
+import ProfilePage from './Components/ProfilePage';
+import Moveable from './Components/Moveable';
+import CodeEditor from './Components/CodeEditor';
+import ClassroomSettings from './Components/ClassroomSettings';
+import Queue from './Components/Queue';
+import JoinClassroom from './Components/JoinClassroom';
+
 
 
 const App = () => {
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, user => {
-      setCurrentUser(user);
-    });
-    return () => unsubscribe(); // Clean up subscription
-  }, []);
   return (
     <Router>
       <Routes>
@@ -32,6 +33,19 @@ const App = () => {
         <Route path="/home" element={<Home />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/class/:classId" element={<ClassDetails />} />
+        <Route path="/me" element={<UserDetails />} />
+        <Route path="/create-class" element={<CreateClassForm />} />
+        <Route path="/classrooms/:TAid" element={<Classroom />} />
+        <Route path="/classrooms/waiting/:TAid" element={<JoinClassroom />} />
+        <Route path="/classrooms/:TAid" element={<Classroom />} />
+        <Route path="/whiteboard" element={<Whiteboard height={500} width={500}/>} /> 
+        <Route path="/code" element={<CodeEditor lang="java" />} /> 
+        <Route path="/passwordReset" element={<ResetPassword />} />
+        <Route path="/forgotPassword" element={<ForgotPassword />} />
+        <Route path="/users/:userId" element={<ProfilePage/>} />
+        <Route path="/resize" element={<Moveable/>} />
+        <Route path="/settings" element={<ClassroomSettings />} />
+        <Route path="/queue/:TAid" element={<Queue />} />
 
       </Routes>
     </Router>
